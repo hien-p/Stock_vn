@@ -1,4 +1,4 @@
-streamlit==0.68.1
+streamlit
 pandas
 matplotlib
 numpy
@@ -6,3 +6,4 @@ yfinance
 openpyxl
 vnstock
 plotly
+watchdog
