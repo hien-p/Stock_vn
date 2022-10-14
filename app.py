@@ -7,7 +7,7 @@ import numpy as np
 from vnstock import *
 import altair as alt
 import plotly.graph_objects as go
-import urllib.request
+
 
 
 
