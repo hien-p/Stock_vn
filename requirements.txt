@@ -3,4 +3,5 @@ pandas
 matplotlib
 numpy
 yfinance
+openpyxl
 vnstock
