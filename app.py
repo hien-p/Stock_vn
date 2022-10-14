@@ -1,13 +1,11 @@
-from ast import main
 from datetime import datetime
-from turtle import onclick
 import streamlit as st
 import pandas as pd
 import numpy as np
 from vnstock import *
 import altair as alt
 import plotly.graph_objects as go
-
+import urllib.request
 
 
 
@@ -128,60 +126,109 @@ if "submitted" not in st.session_state:
     st.session_state.submitted = False
 
 def main(name):
-    if st.button("Enter") or st.session_state.submitted:
+    button = st.button("Enter")
+    if button or st.session_state.submitted:
             st.session_state.submitted = True
             # https://stackoverflow.com/questions/69492406/streamlit-how-to-display-buttons-in-a-single-line
             # https://plotly.com/python/candlestick-charts/
-            df = stock_historical_data(name, "2022-01-01", (datetime.now()).strftime("%Y-%m-%d"))
+            #print(len(str(button))
+            print(len(name))
+            if button == True and len(name) == 0:
+                st.warning('Bạn chưa nhập tên cổ phiếu')
+                return 
             
-            #Sidebar options
-            ticker = st.sidebar.selectbox('Options Phan tich',['Tu van Dau tu','Company Overview','Market','About me'])
-            # with st.form(key ='Form1'):
-            #     with st.sidebar:
-            #         user_word = st.sidebar.text_input("Enter a keyword", "habs")    
-            #         select_language = st.sidebar.radio('Tweet language', ('All', 'English', 'French'))
-            #         include_retweets = st.sidebar.checkbox('Include retweets in data')
-            #         num_of_tweets = st.sidebar.number_input('Maximum number of tweets', 100)
-            #         submitted1 = st.form_submit_button(label = 'Search Twitter 🔎')
-            
-            if ticker == 'About me':
-                return about() 
-            elif ticker == 'Company Overview':
-                # symbol: name 
-                #  report_range 
-                option = st.selectbox('Report range: ',('Yearly','Quarterly'))
-                st.write(option)
-                df = financial_report(symbol=str(name), report_type='BalanceSheet', frequency=option)
-                st.write(df)
-            elif ticker == 'Market':
-                # days_to_plot = st.sidebar.slider(
-                # 'Days to Plot', 
-                # min_value = 1,
-                # max_value = 300,
-                # value = 120,)
-
-                fig = go.Figure(data=[go.Candlestick(x=df['TradingDate'],
-                            open=df['Open'],
-                            high=df['High'],
-                            low=df['Low'],
-                            close=df['Close'],
-                increasing_line_color= 'green', decreasing_line_color= 'red'           
-                )])
-
-                fig.update_layout(
-                margin=dict(l=20, r=20, t=20, b=20),
-                paper_bgcolor="LightSteelBlue",
-                )   
-                # if st.sidebar.button('Include Rangeslider'):
-                fig.update_layout(xaxis_rangeslider_visible=False)
-                st.plotly_chart(fig)
-                st.header('Bang Gia tu 1/2022 -> {}'.format(str((datetime.now()).strftime("%m/%Y"))))
-                st.write(df)
+            try:
+                df = stock_historical_data(name, "2022-01-01", (datetime.now()).strftime("%Y-%m-%d"))
+                #Sidebar options
+                ticker = st.sidebar.selectbox('Options Phan tich',['Tu van Dau tu','Company Overview','Market','About me'])
+                
+                if ticker == 'About me':
+                    return about() 
+                elif ticker == 'Company Overview':
+                
+                    
+                    if "Baocao" not in st.session_state:
+                        st.session_state.Baocao = False
+                    
+                    options = st.sidebar.selectbox('Type Report',['Financial_report','Income Statement','cashflow'])
+                    st.write(options)
+                    data = ['BalanceSheet','IncomeStatement','cashflow']
+                    list_baocao = dict(zip(['Financial_report','Income Statement','cashflow'],data))
+                    if str(options) in list_baocao or st.session_state.Baocao:
+                        st.session_state.Baocao = True
+                        if options == 'Financial_report':
+                            st.info("Bảng cân đối kế toán theo quý hoặc năm")
+                        elif options == 'Income Statement':
+                            st.info("Bảng kết quả kinh doanh")
+                        else:
+                             st.info("báo cáo dòng tiền (cashflow)")
+                        option = st.selectbox('Report range: ',('Yearly','Quarterly'))
+                        
+                        df = financial_report(symbol=str(name), report_type=list_baocao.get(options), frequency=option)
+                        st.write(df)
                 
                 
-                st.line_chart(df[['Close']])
-            else:
-                st.header("Is developing")
+
+                elif ticker == 'Market':
+                    # days_to_plot = st.sidebar.slider(
+                    # 'Days to Plot', 
+                    # min_value = 1,
+                    # max_value = 300,
+                    # value = 120,)
+
+                    fig = go.Figure(data=[go.Candlestick(x=df['TradingDate'],
+                                open=df['Open'],
+                                high=df['High'],
+                                low=df['Low'],
+                                close=df['Close'],
+                    increasing_line_color= 'green', decreasing_line_color= 'red'           
+                    )])
+
+                    fig.update_layout(
+                    margin=dict(l=20, r=20, t=20, b=20),
+                    paper_bgcolor="LightSteelBlue",
+                    )   
+                    # if st.sidebar.button('Include Rangeslider'):
+                    fig.update_layout(xaxis_rangeslider_visible=False)
+                    st.plotly_chart(fig)
+                    st.header('Bang Gia tu 1/2022 -> {}'.format(str((datetime.now()).strftime("%m/%Y"))))
+                    st.write(df)
+                    
+                    
+                    st.line_chart(df[['Close']])
+                else:
+
+                    df = industry_analysis(str(name))
+                    #st.write(df)
+                    colms = st.columns((1, 2, 2, 1, 1))
+                    # overview of rating for companies at the same industry with the desired stock symbol
+                    fields = ["No", 'ten cong ty', 'ID', 'verified', "action"]
+
+                    # for col, field_name in zip(colms, fields):
+                    #     # header
+                    #     col.write(field_name)
+
+                    # for x, email in enumerate(user_table['email']):
+                    #     col1, col2, col3, col4, col5 = st.columns((1, 2, 2, 1, 1))
+                    #     col1.write(x)  # index
+                    #     col2.write(user_table['email'][x])  # email
+                    #     col3.write(user_table['uid'][x])  # unique ID
+                    #     col4.write(user_table['verified'][x])   # email status
+                    #     disable_status = user_table['disabled'][x]  # flexible type of button
+                    #     button_type = "Unblock" if disable_status else "Block"
+                    #     button_phold = col5.empty()  # create a placeholder
+                    #     do_action = button_phold.button(button_type, key=x)
+                    #     if do_action:
+                    #         pass # do some action with row's data
+                    #         button_phold.empty()  #  remove button
+                    st.info("DEVELOPING")
+                    st.text("Watch more company overview")
+            except: 
+                st.markdown(f'<h1 style="color:#ff334b;font-size:24px;">{"Name Error!!!"}</h1>', unsafe_allow_html=True)
+                st.info('Kiểm tra xem bạn đã nhập đúng tên cổ phiếu chưa ')
+           
+            
+            
                 
 
 if __name__ == "__main__":
