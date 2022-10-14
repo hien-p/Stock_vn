@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 # from vnstock import *
 import altair as alt
-import plotly.graph_objects as go
+# import plotly.graph_objects as go
 
 st.title('APP Tu van Chung Khoan')
 
