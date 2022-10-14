@@ -1,12 +1,16 @@
+from ast import main
 from datetime import datetime
+from turtle import onclick
 import streamlit as st
 import pandas as pd
 import numpy as np
 from vnstock import *
 import altair as alt
 import plotly.graph_objects as go
+import urllib.request
 
-st.title('APP Tu van Chung Khoan')
+
+
 
 def get_candlestick_chart(df: pd.DataFrame):
 
@@ -106,89 +110,83 @@ def get_candlestick_plot(
     
     return fig
 
+def get_file_content_as_string(url: str):
+    data = urllib.request.urlopen(url).read()
+    return data.decode("utf-8")
 
-# text = st.text_input("Comments:", placeholder="Some long comment to edit")
-# st.button("Submit", on_click=handler_func)
-    
-name = st.text_input("Which Ticker you want?","VIB")
+def about():
+    content = get_file_content_as_string(
+        "https://raw.githubusercontent.com/hien-p/Stock_vn/main/README.md"
+    )
+    st.markdown(content)
+
+def callback():
+    st.session_state.button_clicked = True
 
 
-# button1 = st.button('Check 1')
+if "submitted" not in st.session_state:
+    st.session_state.submitted = False
 
-# if st.session_state.get('button') != True:
+def main(name):
+    if st.button("Enter") or st.session_state.submitted:
+            st.session_state.submitted = True
+            # https://stackoverflow.com/questions/69492406/streamlit-how-to-display-buttons-in-a-single-line
+            # https://plotly.com/python/candlestick-charts/
+            df = stock_historical_data(name, "2022-01-01", (datetime.now()).strftime("%Y-%m-%d"))
+            
+            #Sidebar options
+            ticker = st.sidebar.selectbox('Options Phan tich',['Tu van Dau tu','Company Overview','Market','About me'])
+            # with st.form(key ='Form1'):
+            #     with st.sidebar:
+            #         user_word = st.sidebar.text_input("Enter a keyword", "habs")    
+            #         select_language = st.sidebar.radio('Tweet language', ('All', 'English', 'French'))
+            #         include_retweets = st.sidebar.checkbox('Include retweets in data')
+            #         num_of_tweets = st.sidebar.number_input('Maximum number of tweets', 100)
+            #         submitted1 = st.form_submit_button(label = 'Search Twitter 🔎')
+            
+            if ticker == 'About me':
+                return about() 
+            elif ticker == 'Company Overview':
+                # symbol: name 
+                #  report_range 
+                option = st.selectbox('Report range: ',('Yearly','Quarterly'))
+                st.write(option)
+                df = financial_report(symbol=str(name), report_type='BalanceSheet', frequency=option)
+                st.write(df)
+            elif ticker == 'Market':
+                # days_to_plot = st.sidebar.slider(
+                # 'Days to Plot', 
+                # min_value = 1,
+                # max_value = 300,
+                # value = 120,)
 
-#     st.session_state['button'] = button1
+                fig = go.Figure(data=[go.Candlestick(x=df['TradingDate'],
+                            open=df['Open'],
+                            high=df['High'],
+                            low=df['Low'],
+                            close=df['Close'],
+                increasing_line_color= 'green', decreasing_line_color= 'red'           
+                )])
 
-# if st.session_state['button'] == True:
+                fig.update_layout(
+                margin=dict(l=20, r=20, t=20, b=20),
+                paper_bgcolor="LightSteelBlue",
+                )   
+                # if st.sidebar.button('Include Rangeslider'):
+                fig.update_layout(xaxis_rangeslider_visible=False)
+                st.plotly_chart(fig)
+                st.header('Bang Gia tu 1/2022 -> {}'.format(str((datetime.now()).strftime("%m/%Y"))))
+                st.write(df)
+                
+                
+                st.line_chart(df[['Close']])
+            else:
+                st.header("Is developing")
+                
 
-#     st.write("button1 is True")
+if __name__ == "__main__":
+    st.title('APP Tu van Chung Khoan')
+    name = st.text_input("Which Ticker you want?","VIB")
+    main(name)
 
-#     if st.button('Check 2'):
-
-#         st.write("Hello, it's working")
-
-#         st.session_state['button'] = True
-
-#         st.checkbox('Reload')
-
-if st.button("Enter"):
-     print("name ", name)
-     st.write(name)
-     # https://stackoverflow.com/questions/69492406/streamlit-how-to-display-buttons-in-a-single-line
-     # https://plotly.com/python/candlestick-charts/
-     df = stock_historical_data(name, "2022-01-01", (datetime.now()).strftime("%Y-%m-%d"))
-     
-     #Sidebar options
-     ticker = st.sidebar.selectbox(
-     'cac Options Phan tich', 
-     options = ['Tu van Dau tu', 'Bai Bao lien Quan', 'Market']
-     )
-    
-     days_to_plot = st.sidebar.slider(
-     'Days to Plot', 
-     min_value = 1,
-     max_value = 300,
-     value = 120,)
-
-     fig = go.Figure(data=[go.Candlestick(x=df['TradingDate'],
-                open=df['Open'],
-                high=df['High'],
-                low=df['Low'],
-                close=df['Close'],
-     increasing_line_color= 'green', decreasing_line_color= 'red'           
-     )])
-
-     fig.update_layout(
-     margin=dict(l=20, r=20, t=20, b=20),
-     paper_bgcolor="LightSteelBlue",
-     )   
-     # if st.sidebar.button('Include Rangeslider'):
-     fig.update_layout(xaxis_rangeslider_visible=False)
-     st.plotly_chart(fig)
-     st.header('Bang Gia tu 1/2022 -> {}'.format(str((datetime.now()).strftime("%m/%Y"))))
-     st.write(df)
-     
-     
-     st.line_chart(df[['Close']])
-
-     
-
-#      ma1 = st.sidebar.number_input(
-#      'Moving Average #1 Length',
-#      value = 10,
-#      min_value = 1,
-#      max_value = 120,
-#      step = 1,    
-#      )
-#      ma2 = st.sidebar.number_input(
-#     'Moving Average #2 Length',
-#      value = 20,
-#      min_value = 1,
-#      max_value = 120,
-#      step = 1,    
-#      )
-#      ticker = name
-#      st.plotly_chart(
-#      get_candlestick_plot(df, ma1, ma2, ticker),
-#      use_container_width = True,
-#      )
+   
