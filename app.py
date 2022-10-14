@@ -2,9 +2,9 @@ from datetime import datetime
 import streamlit as st
 import pandas as pd
 import numpy as np
-# from vnstock import *
+from vnstock import *
 import altair as alt
-# import plotly.graph_objects as go
+import plotly.graph_objects as go
 
 st.title('APP Tu van Chung Khoan')
 
@@ -131,45 +131,45 @@ name = st.text_input("Which Ticker you want?","VIB")
 
 #         st.checkbox('Reload')
 
-# if st.button("Enter"):
-#      print("name ", name)
-#      st.write(name)
-#      # https://stackoverflow.com/questions/69492406/streamlit-how-to-display-buttons-in-a-single-line
-#      # https://plotly.com/python/candlestick-charts/
-#      df = stock_historical_data(name, "2022-01-01", (datetime.now()).strftime("%Y-%m-%d"))
+if st.button("Enter"):
+     print("name ", name)
+     st.write(name)
+     # https://stackoverflow.com/questions/69492406/streamlit-how-to-display-buttons-in-a-single-line
+     # https://plotly.com/python/candlestick-charts/
+     df = stock_historical_data(name, "2022-01-01", (datetime.now()).strftime("%Y-%m-%d"))
      
-#      #Sidebar options
-#      ticker = st.sidebar.selectbox(
-#      'cac Options Phan tich', 
-#      options = ['Tu van Dau tu', 'Bai Bao lien Quan', 'Market']
-#      )
+     #Sidebar options
+     ticker = st.sidebar.selectbox(
+     'cac Options Phan tich', 
+     options = ['Tu van Dau tu', 'Bai Bao lien Quan', 'Market']
+     )
     
-#      days_to_plot = st.sidebar.slider(
-#      'Days to Plot', 
-#      min_value = 1,
-#      max_value = 300,
-#      value = 120,)
+     days_to_plot = st.sidebar.slider(
+     'Days to Plot', 
+     min_value = 1,
+     max_value = 300,
+     value = 120,)
 
-#      fig = go.Figure(data=[go.Candlestick(x=df['TradingDate'],
-#                 open=df['Open'],
-#                 high=df['High'],
-#                 low=df['Low'],
-#                 close=df['Close'],
-#      increasing_line_color= 'green', decreasing_line_color= 'red'           
-#      )])
+     fig = go.Figure(data=[go.Candlestick(x=df['TradingDate'],
+                open=df['Open'],
+                high=df['High'],
+                low=df['Low'],
+                close=df['Close'],
+     increasing_line_color= 'green', decreasing_line_color= 'red'           
+     )])
 
-#      fig.update_layout(
-#      margin=dict(l=20, r=20, t=20, b=20),
-#      paper_bgcolor="LightSteelBlue",
-#      )   
-#      # if st.sidebar.button('Include Rangeslider'):
-#      fig.update_layout(xaxis_rangeslider_visible=False)
-#      st.plotly_chart(fig)
-#      st.header('Bang Gia tu 1/2022 -> {}'.format(str((datetime.now()).strftime("%m/%Y"))))
-#      st.write(df)
+     fig.update_layout(
+     margin=dict(l=20, r=20, t=20, b=20),
+     paper_bgcolor="LightSteelBlue",
+     )   
+     # if st.sidebar.button('Include Rangeslider'):
+     fig.update_layout(xaxis_rangeslider_visible=False)
+     st.plotly_chart(fig)
+     st.header('Bang Gia tu 1/2022 -> {}'.format(str((datetime.now()).strftime("%m/%Y"))))
+     st.write(df)
      
      
-     #st.line_chart(df[['Close']])
+     st.line_chart(df[['Close']])
 
      
 
