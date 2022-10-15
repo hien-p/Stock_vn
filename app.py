@@ -7,8 +7,8 @@ from vnstock import *
 import altair as alt
 import plotly.graph_objects as go
 import urllib.request
-
-
+import matplotlib.pyplot as plt
+import plotly.figure_factory as ff
 
 
 def get_candlestick_chart(df: pd.DataFrame):
@@ -133,7 +133,7 @@ def main(name):
             # https://stackoverflow.com/questions/69492406/streamlit-how-to-display-buttons-in-a-single-line
             # https://plotly.com/python/candlestick-charts/
             #print(len(str(button))
-            print(len(name))
+            #print(len(name))
             try:
                 if button == True and len(name) == 0:
                     st.warning('Bạn chưa nhập tên cổ phiếu')
@@ -184,16 +184,72 @@ def main(name):
                 value = 120,)
                 d = datetime.today() - timedelta(days=days_to_plot+1)
                 date_time = d.strftime("%m/%d/%Y, %H:%M:%S")
-                #st.header('Bang Gia tu {} -> {}'.format(str(d).strftime("%m/%d/%Y")),str((datetime.now()).strftime("%m/%Y")))
+                
                 st.header("Bảng giá từ {} -> {}".format((datetime.today() - timedelta(days=days_to_plot)).strftime("%d/%m/%Y"), str((datetime.now()).strftime("%d/%m/%Y"))))
                 df = stock_historical_data(name, d.strftime("%Y-%m-%d"), (datetime.now()).strftime("%Y-%m-%d"))
                 st.write(df)
                 # 
                 max_close = df.xs(key='Close',axis=1).max()
-                max_close = df.loc[df['Close'] == max_close,'TradingDate'].item()
+                max_close = df.loc[df['Close'] == max_close].drop_duplicates(subset=['Close'])['TradingDate'].item()
                 text_close = "Ngày có giá trị cổ phiếu đóng cửa lớn nhất là: {}".format(max_close.strftime("%d-%m-%Y"))
                 st.info(text_close)
 
+                # max open price
+                max_open = df.xs(key='Open',axis=1).max()
+                max_open = df.loc[df['Open'] == max_open].drop_duplicates(subset=['Open'])['TradingDate'].item()
+                text_close = "Ngày có giá trị cổ phiếu mở cửa lớn nhất là: {}".format(max_open.strftime("%d-%m-%Y"))
+                st.info(text_close)
+
+                try: 
+                    max_high = df.xs(key='High',axis=1).max()
+                    #st.write((df[df['High'] == max_high]).drop_duplicates().item())
+                    max_high =  df.loc[df['High'] == max_high].drop_duplicates(subset=['High'])['TradingDate'].item()
+                    text_close = "Ngày có giá trị cổ phiếu lớn nhất là: {}".format(max_high.strftime("%d-%m-%Y"))
+                    st.info(text_close)
+                except Exception as e:
+                    data = df.loc[df['High'] == max_high].drop_duplicates(subset=['High'])['TradingDate']
+                    st.write(data)
+                    #print(e)
+                    
+                options = st.sidebar.multiselect(
+                'chọn giá trị cổ phiếu theo ngày',
+                ['Open','High', 'Low','Close'])  
+                #st.sidebar.write('You selected:', options)    
+                #st.write(type(options))    
+                if options:
+                    min_max = st.sidebar.radio("Miền giá trị của giá ",('Max', 'Min','both'))
+                    st.sidebar.write('You selected', min_max)
+                    
+                # tỉ suất lợi nhuận 
+                # (giá đóng cửa hiện tại – giá đóng cửa ngày trước đó)/giá đóng cửa ngày trước đó 
+                value_banks = pd.DataFrame()
+                #for name in list_banks:
+                value_banks[name+' value_bank'] = df['Close'].pct_change()
+                value_banks['Day'] = df['TradingDate']
+                value_banks.dropna(inplace= True)
+                # #
+                #fig = ff.create_distplot(hist_data, group_labels, bin_size=[.1, .25, .5])
+
+                # st.write(plt.figure(figsize=(15,5))) # Tùy chỉnh kích thước biểu đồ
+                # st.write(sns.distplot(value_banks.loc['VIB Value_bank'],color='green',bins=100))
+                st.write()
+                #group_labels = value_banks.iloc[:, 1].values.tolist()
+                #fig = ff.create_distplot(value_banks.iloc[:, 0].values.tolist(), group_labels, bin_size=100)
+                # Add histogram data
+                x1 = np.random.randn(200) - 2
+                x2 = np.random.randn(200)
+                x3 = np.random.randn(200) + 2
+
+                # Group data together
+                # hist_data = [value_banks.iloc[:, 0].values]
+
+                # group_labels = ['Group 1']
+                # #st.write(value_banks.iloc[:, 0].values)
+                # st.write(x1)
+                # # Create distplot with custom bin_size
+                # fig = ff.create_distplot(
+                #         hist_data, group_labels, bin_size=[.1])
+                # st.plotly_chart(fig, use_container_width=True)
                 #st.write()
                 # fig = go.Figure(data=[go.Candlestick(x=df['TradingDate'],
                 #             open=df['Open'],
