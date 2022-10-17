@@ -1,5 +1,5 @@
 from ast import main
-from datetime import datetime,timedelta
+from datetime import date, datetime,timedelta
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 import urllib.request
 import matplotlib.pyplot as plt
 import plotly.figure_factory as ff
-
+import time
 
 def get_candlestick_chart(df: pd.DataFrame):
 
@@ -228,28 +228,69 @@ def main(name):
                 value_banks['Day'] = df['TradingDate']
                 value_banks.dropna(inplace= True)
                 # #
-                #fig = ff.create_distplot(hist_data, group_labels, bin_size=[.1, .25, .5])
+               
 
                 # st.write(plt.figure(figsize=(15,5))) # Tùy chỉnh kích thước biểu đồ
                 # st.write(sns.distplot(value_banks.loc['VIB Value_bank'],color='green',bins=100))
-                st.write()
+                
                 #group_labels = value_banks.iloc[:, 1].values.tolist()
                 #fig = ff.create_distplot(value_banks.iloc[:, 0].values.tolist(), group_labels, bin_size=100)
                 # Add histogram data
                 x1 = np.random.randn(200) - 2
-                x2 = np.random.randn(200)
-                x3 = np.random.randn(200) + 2
+                
 
                 # Group data together
-                # hist_data = [value_banks.iloc[:, 0].values]
+                hist_data = [x1]
+                #group_labels = ['Group 1', 'Group 2', 'Group 3']
 
-                # group_labels = ['Group 1']
-                # #st.write(value_banks.iloc[:, 0].values)
-                # st.write(x1)
-                # # Create distplot with custom bin_size
+                # Create distplot with custom bin_size
+                fig = ff.create_distplot(
+                        [value_banks.iloc[:, 0].values],[str(name)],bin_size=[.01])
+
+                # Plot!
+                # config = dict({'scrollZoom': True})
+                # fig.update(config=config)
+                #fig.update(layout_xaxis_rangeslider_visible=False)
+                fig.layout.xaxis.fixedrange = True
+                fig.layout.yaxis.fixedrange = True 
+                config = {
+                'displayModeBar': False,
+                'scrollZoom': True
+                }
+                st.plotly_chart(fig, use_container_width=True,config=config)
+                
+                weekno = datetime.today().weekday()
+                
+                if st.sidebar.button("xem dữ liệu hôm nay"):
+                    if weekno < 5: 
+                        try: 
+                            with st.spinner('Wait for it...'):
+                                intraday_data =  stock_intraday_data(symbol="FLC",page_num=0,page_size=10000)
+                                st.write(intraday_data[['price','volume','a','time']])
+                            st.success('Done!')
+                        except Exception as e:
+                            st.warning("giá không được cập nhập ")
+                    else:
+                       st.info("Hôm nay là ngày cuối tuần nên không có dữ liệu gì cả ")
+                
+                
+                    
+               
+                #config = dict({'scrollZoom':False})
+
+                # fig.add_trace(
+                #     go.Scatter(
+                #         x=[1, 2, 3],
+                #         y=[1, 3, 1]))
+                # fig.layout.xaxis.fixedrange = True
+                # fig.layout.yaxis.fixedrange = True        
+                # st.plotly_chart(fig, use_container_width=True)#**{'config': config})
+                # st.write(fig.update(config=config))
+
+                #  # Create distplot with custom bin_size
                 # fig = ff.create_distplot(
                 #         hist_data, group_labels, bin_size=[.1])
-                # st.plotly_chart(fig, use_container_width=True)
+                #st.plotly_chart(fig, use_container_width=True)
                 #st.write()
                 # fig = go.Figure(data=[go.Candlestick(x=df['TradingDate'],
                 #             open=df['Open'],
