@@ -1,4 +1,5 @@
 # Stock VN 
 
-Demo url: https://hien-p-stock-vn-app-mdqi0x.streamlitapp.com/  
-Author: Hien
+Demo url: https://stock-vn.streamlitapp.com/
+Author: Hien 
+
