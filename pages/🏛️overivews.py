@@ -60,7 +60,7 @@ def financial_ratio_s(symbol_ls, industry_comparison, frequency, start_year):
             'sec-ch-ua-mobile': '?0',
             'X-Fiin-Key': 'KEY',
             'Content-Type': 'application/json',
-            'Accept': 'application/json',w
+            'Accept': 'application/json',
             'X-Fiin-User-ID': 'ID',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64conent; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36',
             'X-Fiin-Seed': 'SEED',
