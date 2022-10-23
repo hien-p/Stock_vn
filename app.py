@@ -109,6 +109,7 @@ def get_candlestick_plot(
     
     return fig
 
+
 def get_file_content_as_string(url: str):
     data = urllib.request.urlopen(url).read()
     return data.decode("utf-8")
@@ -123,14 +124,13 @@ def callback():
     st.session_state.button_clicked = True
 
 
-if "submitted" not in st.session_state:
-    st.session_state.submitted = False
+
 
 def rangePrice():
     pass
 
 @st.cache
-def expensive(a, b, name):
+def expensive(name):
     time.sleep(2)
     df =  stock_intraday_data(symbol=str(name),page_num=0,page_size=10000)
     return df
@@ -138,22 +138,19 @@ def expensive(a, b, name):
 
 def main(name):
     button = st.button("Enter")
+    if "submitted" not in st.session_state:
+        st.session_state.submitted = False
+
     if button or st.session_state.submitted:
             st.session_state.submitted = True
             # https://stackoverflow.com/questions/69492406/streamlit-how-to-display-buttons-in-a-single-line
             # https://plotly.com/python/candlestick-charts/
-            #print(len(str(button))
-            #print(len(name))
             try:
                 if button == True and len(name) == 0:
                     st.warning('Bạn chưa nhập tên cổ phiếu')
                     return 
                 df = ticker_overview(name)
-                
-                # st.info(ticker)
-                # st.info(company_name)
-                # st.info(company_short_name)
-                #st.write(df.iloc[0]['shortName'])
+ 
                 if 'status' in df.columns:   
                     raise ValueError('A very specific bad thing happened.')
             except: 
@@ -164,34 +161,9 @@ def main(name):
             
         
             #Sidebar options
-            ticker = st.sidebar.selectbox('Options Phan tich',['Investment','Company Overview','Market','About me'])
-            
+            ticker = st.sidebar.selectbox('Options',['Investment','Market','About me'])
             if ticker == 'About me':
                 return about() 
-            elif ticker == 'Company Overview':
-
-                if "Baocao" not in st.session_state:
-                    st.session_state.Baocao = False
-                
-                options = st.sidebar.selectbox('Type Report',['Financial_report','Income Statement','cashflow'])
-                st.write(options)
-                data = ['BalanceSheet','IncomeStatement','cashflow']
-                list_baocao = dict(zip(['Financial_report','Income Statement','cashflow'],data))
-                if str(options) in list_baocao or st.session_state.Baocao:
-                    st.session_state.Baocao = True
-                    if options == 'Financial_report':
-                        st.info("Bảng cân đối kế toán theo quý hoặc năm")
-                    elif options == 'Income Statement':
-                        st.info("Bảng kết quả kinh doanh")
-                    else:
-                            st.info("báo cáo dòng tiền (cashflow)")
-                    option = st.selectbox('Report range: ',('Yearly','Quarterly'))
-                    
-                    df = financial_report(symbol=str(name), report_type=list_baocao.get(options), frequency=option)
-                    st.write(df)
-            
-            
-
             elif ticker == 'Market':
                 if "intra" not in st.session_state:
                     st.session_state.intra = False
@@ -201,10 +173,8 @@ def main(name):
                     colms1, colms2 = st.columns(2)
 
                     with colms1:
-                        a = 2
-                        b = 3
                         with st.spinner("Loading. Please waiting"):
-                            res = expensive(a, b, name)
+                            res = expensive(name)
                         res = res[['price','volume','cp','a','time']]
                         res = res.rename(columns={"cp": "+/-", "a": "Types of trade"})
                         st.write(res)
@@ -225,8 +195,6 @@ def main(name):
                         * Mua chủ động (hay Buy Up) là khi NĐT thực hiện mua thẳng cổ phiếu tại giá dư bán gần nhất để có thể khớp luôn. 
                         * Bán chủ động (hay Sell Down) là khi NĐT thực hiện bán thẳng cổ phiếu tại giá dư mua gần nhất để có thể khớp ngay.
                     """     
-
-                   
                     #print(st.session_state.Description)
                     if "Description" not in st.session_state:
                         st.session_state.Description = False
@@ -264,9 +232,9 @@ def main(name):
                 #         #if 'id' not in st.session_state.keys():
                 #         st.session_state['id']= text
                 #         #st.experimental_rerun()
-                     
+
                 #     cols[0].code(st.session_state['id'], language="markdown")
-               
+
                 if st.sidebar.button("Watch price days before"):       
                     days_to_plot = st.sidebar.slider('Days to Plot', 
                     min_value = 1,
@@ -404,51 +372,60 @@ def main(name):
                 # st.line_chart(df[['Close']])
             else:
                 
-                #df = industry_analysis(str(name))
-                #st.write(df)
-                colms = st.columns((1, 2, 2, 1, 1))
+                #df = pd.read_csv('data.csv')  
+                
+                #st.header("List of results")
+                colms = st.columns((1, 2, 2, 1))
                 # overview of rating for companies at the same industry with the desired stock symbol
-                #fields = ["No", 'ten cong ty', 'ID', 'verified', "action"]
+                fields = ["No", 'Company', 'Ticker', 'shortname']
 
-                # for col, field_name in zip(colms, fields):
-                #     # header
-                #     col.write(field_name)
-
-                # for x, email in enumerate(user_table['email']):
-                #     col1, col2, col3, col4, col5 = st.columns((1, 2, 2, 1, 1))
-                #     col1.write(x)  # index
-                #     col2.write(user_table['email'][x])  # email
-                #     col3.write(user_table['uid'][x])  # unique ID
-                #     col4.write(user_table['verified'][x])   # email status
-                #     disable_status = user_table['disabled'][x]  # flexible type of button
-                #     button_type = "Unblock" if disable_status else "Block"
-                #     button_phold = col5.empty()  # create a placeholder
-                #     do_action = button_phold.button(button_type, key=x)
-                #     if do_action:
-                #         pass # do some action with row's data
-                #         button_phold.empty()  #  remove button
+                for col, field_name in zip(colms, fields):
+                    col.write(field_name)
+   
                 data_name_df = listing_companies()
-                table = data_name_df[data_name_df['ticker'] == name].values.tolist()
-
-                text = """
-                ### **Ticker**: {} \n
-                ### **Company name**: {}\n
-                ### **company short name** :{}
-                """.format(table[0][0],table[0][2],table[0][3])
-                st.markdown(text)
+                col_one_list = data_name_df['ticker'].tolist()
+                
+                if "multiselect" not in st.session_state:
+                    st.session_state["multiselect"] = []
+                
+                #if selectbox_01:
+                
+                
+                selectbox_01 = st.sidebar.multiselect('Select more',col_one_list,[str(name)])
+                st.session_state["multiselect"] = selectbox_01
+                if len(selectbox_01) == 1:
+                    table = data_name_df[data_name_df['ticker'] == name].values.tolist()
+                else:
+                    table = data_name_df[data_name_df['ticker'].isin(selectbox_01)].values.tolist()
+                #st.sidebar.write(selectbox_01)
+                for i in range(len(table)):
+                    col1, col2, col3, col4 = st.columns((1, 2, 2, 1))
+                    col1.write(i+1)
+                    col3.write(table[i][0])
+                    col4.write(table[i][3])
+                    col2.write(table[i][2])
+               
+                
                 st.info("DEVELOPING")
                 st.text("Watch more company overview and Market")
         
         
         
 
-
 if __name__ == "__main__":
-    #_max_width_()
-    # https://blog.devgenius.io/how-to-build-a-multi-language-dashboard-with-streamlit-9bc087dd4243 
-    st.set_page_config(layout='wide')
-    st.title('Tư vấn chứng khoán')
-    name = st.text_input("Which Ticker you want?","VIB")
-    main(name)
+    st.set_page_config(page_title="investing app",page_icon="chart_with_upwards_trend",layout='wide')
 
-   
+    _, center, _ = st.columns([1, 2, 1])
+    with center:
+        st.title('Tư vấn chứng khoán')
+    
+    name = st.text_input("Which Ticker you want?","VIB")
+    #st.sidebar.markdown("""-""")
+    st.sidebar.success("Selects pages above")
+    if "name_stock" not in st.session_state:
+        st.session_state["name_stock"] = ""
+
+    with st.expander("How it works"):
+        st.markdown("You can type your favourite stocks to fine more details")
+    
+    main(name)
